@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Release" />
+	<File name="Source\Bubble\wxBubble\v1.0\Source\Bubble.cpp" open="1" top="1" tabpos="2">
+		<Cursor position="43200" topLine="1024" />
+	</File>
+	<File name="Source\Bubble\wxBubble\v1.0\Source\BubblePicker.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="9083" topLine="179" />
+	</File>
+	<File name="Source\main.cpp" open="1" top="0" tabpos="1">
+		<Cursor position="3081" topLine="52" />
+	</File>
+</CodeBlocks_layout_file>

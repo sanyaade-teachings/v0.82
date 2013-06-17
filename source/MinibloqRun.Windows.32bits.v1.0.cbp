@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="MinibloqRun" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output=".\Bin\Minibloq\MinibloqRun" prefix_auto="1" extension_auto="1" />
+				<Option object_output="Obj\Debug\" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-DDEBUG" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output=".\Bin\Minibloq\MinibloqRun" prefix_auto="1" extension_auto="1" />
+				<Option object_output="Obj\Release" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-mwindows" />
+				</Linker>
+				<ExtraCommands>
+					<Add before="windres -O coff -o Resources/MinibloqRun.res -i Resources/MinibloqRun.rc" />
+				</ExtraCommands>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+			<Add option="-D_UNICODE" />
+			<Add option="-DUNICODE" />
+		</Compiler>
+		<Linker>
+			<Add library="Gdi32" />
+			<Add library="oleaut32" />
+		</Linker>
+		<Unit filename="Images\MinibloqRun.ico" />
+		<Unit filename="Resources\MinibloqRun.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="Source\MinibloqRun.cpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+			<DoxyBlocks>
+				<comment_style block="0" line="2" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general use_at_in_tags="1" />
+			</DoxyBlocks>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

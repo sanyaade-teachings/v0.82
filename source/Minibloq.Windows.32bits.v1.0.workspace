@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_workspace_file>
+	<Workspace title="Minibloq.v1.0">
+		<Project filename="Bin/Minibloq/Components/hid_bootloader_cli/v1.0/Source.Windows/hid_bootloader_cli.cbp" />
+		<Project filename="MinibloqRun.Windows.32bits.v1.0.cbp" />
+		<Project filename="Minibloq.Windows.32bits.v1.0.cbp" active="1" />
+	</Workspace>
+</CodeBlocks_workspace_file>
