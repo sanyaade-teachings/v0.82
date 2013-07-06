@@ -2301,6 +2301,10 @@ void MainFrame::createTerminal()
                                                 commManager,
                                                 tempColor
                                                );
+#if defined(linux)
+        if(singleTerminalGUI)
+        commManager->m_pHandler = singleTerminalGUI;
+#endif
         if (singleTerminalGUI && splitTerminalGUI)
         {
             //##Levantar de disco bien, etc.:

@@ -44,7 +44,6 @@ BEGIN_EVENT_TABLE(TerminalTxEditor, wxTextCtrl)
     EVT_CHAR(TerminalTxEditor::OnChar)
 END_EVENT_TABLE()
 
-
 void TerminalTxEditor::OnChar(wxKeyEvent& event)
 {
     //##There are problems with the weird keys (delte, backspace, etc.), both when the user input texts and
@@ -223,9 +222,11 @@ wxThread::ExitCode TerminalRXThread::Entry()
         {
             buffer[readCount] = '\0';
 
-#if defined (linux)
-            wxMutexGuiEnter(); //##Test this a lot under Windows.
-#endif
+#if defined(linux)
+            wxCommandEvent e(wxEVT_COMMAND_TERMINAL_UPDATE);
+            e.SetString(wxConvLocal.cMB2WC(buffer));
+            wxQueueEvent(m_pHandler, e.Clone());
+#else
             //Editor belonging to split editor terminals:
             if (rxEditor)
             {
@@ -272,8 +273,6 @@ wxThread::ExitCode TerminalRXThread::Entry()
                 }
             }
 
-#if defined (linux)
-            wxMutexGuiLeave(); //##Test this a lot under Windows.
 #endif
             //wxThread::Sleep(10); //Is this necessary? Not by now, but have to do more testing.
         }
@@ -383,7 +382,9 @@ bool TerminalCommManager::openUsbHid()
             //If bootloader found, sends the reset command, so it starts the application:
             //## printf("Bootloader found. Jumping to application\n");
             rawhid_send(0, bootPacket, sizeof(bootPacket), 25);
+#if defined (WIN32)
             rawhid_close(0);
+#endif
 
             //##while ( (r = rawhid_open(1, 0x03EB, 0x204F, 0xFF00, 0x01)) <= 0 )
             while ( rawhid_open(getUsbDeviceNumber(), getUsbVid(), getUsbPidApp(), 0xFF00, 0x01) <= 0 )
@@ -395,7 +396,9 @@ bool TerminalCommManager::openUsbHid()
                 wxMilliSleep(1000);
 #endif
                 rawhid_send(0, bootPacket, sizeof(bootPacket), 25);
+#if defined (WIN32)
                 rawhid_close(0);
+#endif
             }
             //## printf("\n");
         }
@@ -460,6 +463,9 @@ bool TerminalCommManager::open()
         if (getSingleTerminal())
             rxTxEditor = getSingleTerminal()->getRxTxEditor();
         rxThread = new TerminalRXThread(getMode(), serialPort, rxEditor, rxTxEditor, rxEmoticon);
+#if defined(linux)
+        rxThread->m_pHandler = this->m_pHandler;
+#endif
         if (rxThread)
         {
             if ( rxThread->Create() == wxTHREAD_NO_ERROR )
@@ -548,6 +554,9 @@ void TerminalCommManager::enableTerminalsButtons(bool openEnable, bool closeEnab
 /////////////////////////////////////////////////////////////////////////////
 BEGIN_EVENT_TABLE(BaseTerminalGUI, BubblePanel)
     EVT_CHECKBOX(ID_CheckShowEmoticons, BaseTerminalGUI::OnCheckShowEmoticonsClick)
+#if defined(linux)
+    EVT_COMMAND(wxID_ANY, wxEVT_COMMAND_TERMINAL_UPDATE, BaseTerminalGUI::OnThreadUpdate)
+#endif
 END_EVENT_TABLE()
 
 
@@ -741,7 +750,62 @@ void BaseTerminalGUI::enableTerminalsButtons(bool openEnable, bool closeEnable)
     if (buttonClosePort)
         buttonClosePort->Enable(closeEnable);
 }
+#if defined(linux)
+void BaseTerminalGUI::OnThreadUpdate(wxCommandEvent& evt){
+if (getCommManager())
+    {
+    //Editor belonging to split editor terminals:
+    if (getCommManager()->getSplitTerminal())
+    {
+        if(getCommManager()->getSplitTerminal()->getRxEditor())
+        {
+            wxTextCtrl *rxEditor = getCommManager()->getSplitTerminal()->getRxEditor();
 
+            rxEditor->AppendText(evt.GetString());
+        }
+        if(getCommManager()->getSplitTerminal()->getRxEmoticon())
+        {
+            EmoticonScreen *emoticonScreen = getCommManager()->getSplitTerminal()->getRxEmoticon();
+
+
+                //As this is for separated emotincon windows, shows only the last received emoticon:
+                //(##in future implementations, it will be possible to insert the emoticons inside the
+                //rxEditor itself, between the text):
+
+                //First: Find the last emoticon:
+                wxString strToParse(evt.GetString());
+                int index =             strToParse.Find(":)");  //##Future: unhardcode these
+                index = std::max(index, strToParse.Find(":(")); //comparisons... Create a method
+                index = std::max(index, strToParse.Find(":|")); //to send to this class the list of
+                index = std::max(index, strToParse.Find("<-")); //valid emoticons.
+                index = std::max(index, strToParse.Find("->"));
+                index = std::max(index, strToParse.Find("<>"));
+
+                //Only sets the last emoticon, nochange otherwise:
+                if (index != wxNOT_FOUND)
+                {
+                    if (index < (int)(strToParse.Len() - 1))
+                    {
+                        emoticonScreen->setEmoticonStr( wxString(strToParse[index]) +
+                                                        wxString(strToParse[index + 1]));
+                    }
+                }
+        }
+    }
+    //Editor belonging to single editor terminals:
+    if (getCommManager()->getSingleTerminal() && getCommManager()->getSingleTerminal()->getRxTxEditor())
+    {
+        TerminalTxEditor *rxTxEditor = getCommManager()->getSingleTerminal()->getRxTxEditor();
+
+        rxTxEditor->SetDefaultStyle(wxTextAttr(rxTxEditor->getRxColour(), rxTxEditor->GetBackgroundColour()));
+        rxTxEditor->AppendText(evt.GetString());
+        rxTxEditor->SetDefaultStyle(wxTextAttr(rxTxEditor->getTxColour(), rxTxEditor->GetBackgroundColour()));
+    }
+    }
+
+}
+wxDEFINE_EVENT(wxEVT_COMMAND_TERMINAL_UPDATE, wxCommandEvent);
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
